@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://kit.fontawesome.com; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com;">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="X-Frame-Options" content="DENY">
+  <title>与星星对话</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Lora&display=swap" rel="stylesheet">
+  <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+  <style>
+    /* 基本样式 */
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #FFFCF1, #FFF9E6);
+      color: #4A4A4A;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      transition: background 0.3s ease;
+    }
+
+    /* 页面容器 */
+    .container {
+      background-color: #FFFCF1;
+      width: 100%;
+      max-width: 800px;
+      border-radius: 20px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      text-align: center;
+      animation: fadeIn 1s ease-in;
+    }
+
+    /* 标题 */
+    h1 {
+      font-size: 2.8rem;
+      color: #f4a261;
+      margin-bottom: 20px;
+      font-family: 'Lora', serif;
+      font-weight: 600;
+    }
+
+    /* 小段落 */
+    p {
+      font-size: 1.1rem;
+      color: #6A6A6A;
+      line-height: 1.6;
+      margin-bottom: 30px;
+      font-family: 'Lora', serif;
+    }
+
+    /* 输入框和按钮 */
+    .file-input {
+      background-color: #FFF6D5;
+      padding: 15px;
+      border-radius: 12px;
+      border: 2px solid #f4a261;
+      margin: 10px 0;
+      width: 100%;
+      max-width: 500px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+      transition: transform 0.3s ease;
+    }
+
+    .file-input:hover {
+      transform: scale(1.05);
+    }
+
+    /* 上传文件按钮 */
+    .button {
+      background-color: #f4a261;
+      border: none;
+      padding: 15px 30px;
+      color: white;
+      font-size: 1.1rem;
+      border-radius: 12px;
+      cursor: pointer;
+      width: 100%;
+      max-width: 200px;
+      margin-top: 20px;
+      transition: background-color 0.3s, transform 0.2s;
+    }
+
+    .button:hover {
+      background-color: #e76f51;
+      transform: scale(1.05);
+    }
+
+    /* 结果和建议区域 */
+    .result-box, .advice-box {
+      background-color: #FFF4D1;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      margin-top: 30px;
+      color: #4A4A4A;
+      animation: fadeIn 1s ease-in;
+    }
+
+    .result-box h2, .advice-box h2 {
+      font-size: 1.5rem;
+      color: #f4a261;
+      font-family: 'Lora', serif;
+      margin-bottom: 10px;
+    }
+
+    .result-box p, .advice-box p {
+      font-size: 1.1rem;
+      line-height: 1.6;
+    }
+
+    /* 动画效果 */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    /* 加载动画 */
+    .loader {
+      border: 8px solid #f4a261;
+      border-top: 8px solid #fff;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 2s linear infinite;
+      margin: auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>🌟 与星星对话</h1>
+    <p>上传孩子的作品或表达，我们将尝试帮助您理解他们的想法，并提供沟通建议。</p>
+
+    <div class="section">
+      <label for="image" class="file-input">🖼️ 上传作品图片：</label><br>
+      <input type="file" id="image" class="file-input" accept="image/*">
+    </div>
+
+    <div class="section">
+      <label for="audio" class="file-input">🎤 上传音视频表达：</label><br>
+      <input type="file" id="audio" class="file-input" accept="audio/*,video/*">
+    </div>
+
+    <button class="button" onclick="analyze()">开始分析</button>
+
+    <div class="result-box" id="result">
+      <h2>🧠 系统识别结果</h2>
+      <p id="analysisText">请上传内容并点击“开始分析”。</p>
+    </div>
+
+    <div class="advice-box" id="advice">
+      <h2>💡 沟通建议</h2>
+      <p id="adviceText">我们将在分析后为您生成建议。</p>
+    </div>
+  </div>
+
+  <script>
+    async function analyze() {
+      const imageFile = document.getElementById("image").files[0];
+      const audioFile = document.getElementById("audio").files[0];
+
+      if (!imageFile && !audioFile) {
+        alert("请至少上传一项内容！");
+        return;
+      }
+
+      document.getElementById("analysisText").textContent = "正在分析中，请稍候...";
+      document.getElementById("adviceText").textContent = "";
+      
+      // 显示加载动画
+      const loader = document.createElement("div");
+      loader.classList.add("loader");
+      document.getElementById("result").appendChild(loader);
+
+      // 处理图片分析
+      if (imageFile) {
+        const imageAnalysis = await analyzeImage(imageFile);
+        document.getElementById("analysisText").textContent += `\n\n图片分析结果：${imageAnalysis}`;
+      }
+
+      // 处理音频转文字与分析
+      if (audioFile) {
+        const audioText = await transcribeAudio(audioFile);
+        const advice = await getAdvice(audioText);
+        document.getElementById("adviceText").textContent = advice;
+      }
+
+      // 移除加载动画
+      loader.remove();
+    }
+
+    // 图像分析函数（示例）
+    async function analyzeImage(file) {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('https://vision.googleapis.com/v1/images:annotate?key=YOUR_GOOGLE_API_KEY', {
+        method: 'POST',
+        body: JSON.stringify({
+          requests: [
+            {
+              image: {
+                content: file // 将图片转为base64并上传
+              },
+              features: [
+                { type: 'LABEL_DETECTION' },
+                { type: 'TEXT_DETECTION' }
+              ]
+            }
+          ]
+        })
+      });
+
+      const data = await response.json();
+      return data.responses[0].labelAnnotations.map(label => label.description).join(', ');
+    }
+
+    // 音频转录（示例）
+    async function transcribeAudio(file) {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer YOUR_OPENAI_API_KEY',
+          'Content-Type': 'multipart/form-data'
+        },
+        body: formData
+      });
+
+      const data = await response.json();
+      return data.text;
+    }
+
+    // 获取建议（示例）
+    async function getAdvice(text) {
+      // 根据转录文本提供建议
+      return "建议：请多给孩子时间，理解他们的情感表达。";
+    }
+  </script>
+</body>
+</html>
